@@ -1,6 +1,7 @@
 import 'package:chatbond/pages/home_page.dart';
 import 'package:chatbond/pages/login_page.dart';
 import 'package:chatbond/pages/register_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class NavigationService {
@@ -34,5 +35,9 @@ class NavigationService {
 
   void goBack() {
     _navigatorKey.currentState?.pop();
+  }
+
+  void push(MaterialPageRoute route) {
+    _navigatorKey.currentState?.push(route);
   }
 }
