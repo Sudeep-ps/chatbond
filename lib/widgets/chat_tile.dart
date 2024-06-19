@@ -11,7 +11,9 @@ class ChatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(vertical: 10.0),
-      tileColor: Colors.blueGrey[100],
+      splashColor: Colors.blueGrey[200],
+      horizontalTitleGap: 3.0,
+      minVerticalPadding: 4,
       onTap: () {
         onTap();
       },

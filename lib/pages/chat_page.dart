@@ -28,6 +28,7 @@ class _ChatPageState extends State<ChatPage> {
   late DatabaseService _databaseService;
   late MediaService _mediaService;
   late StorageService _storageService;
+
   @override
   void initState() {
     super.initState();
@@ -45,7 +46,20 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.chatUser.name!),
+        backgroundColor: Colors.blueAccent,
+        title: Row(
+          children: [
+            CircleAvatar(
+                backgroundImage: NetworkImage(widget.chatUser.pfpURL!)),
+            const SizedBox(
+              width: 15,
+            ),
+            Text(
+              widget.chatUser.name!,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
       ),
       body: _buildUI(),
     );
@@ -64,10 +78,27 @@ class _ChatPageState extends State<ChatPage> {
               messageOptions: const MessageOptions(
                 showOtherUsersAvatar: true,
                 showTime: true,
+                showOtherUsersName: false,
+                currentUserContainerColor: Color.fromARGB(255, 65, 167, 68),
+                containerColor: Color.fromARGB(255, 220, 220, 220),
+                timeTextColor: Colors.black,
+                currentUserTimeTextColor: Colors.black,
               ),
-              inputOptions: InputOptions(alwaysShowSend: true, trailing: [
-                _mediaMessageButton(),
-              ]),
+              inputOptions: InputOptions(
+                inputToolbarStyle: const BoxDecoration(
+                  color: Colors.white,
+                ),
+                alwaysShowSend: true,
+                inputDecoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color.fromARGB(255, 220, 220, 220),
+                    isDense: true,
+                    hintText: "Type a messeage...",
+                    suffixIcon: _mediaMessageButton(),
+                    border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(30))),
+              ),
               currentUser: currentUser!,
               onSend: _sendMessage,
               messages: messages);
@@ -123,6 +154,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _mediaMessageButton() {
     return IconButton(
+        iconSize: 25,
         onPressed: () async {
           File? file = await _mediaService.getImageFromGallery();
           if (file != null) {

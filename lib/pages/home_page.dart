@@ -36,23 +36,28 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          centerTitle: true,
           title: const Text(
             "Messages",
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.blueAccent,
           actions: [
-            IconButton(
-                color: Colors.red,
-                onPressed: () async {
-                  bool result = await _authService.logout();
-                  if (result) {
-                    _alertService.showToast(
-                        text: "Successfully logged out", icon: Icons.check);
-                    _navigationService.pushReplacementNamed("/login");
-                  }
-                },
-                icon: const Icon(Icons.logout))
+            PopupMenuButton(itemBuilder: (context) {
+              return [
+                PopupMenuItem(
+                  child: const Text('Log out'),
+                  onTap: () async {
+                    bool result = await _authService.logout();
+                    if (result) {
+                      _alertService.showToast(
+                          text: "Successfully logged out", icon: Icons.check);
+                      _navigationService.pushReplacementNamed("/login");
+                    }
+                  },
+                ),
+              ];
+            }),
           ]),
       body: _buildUI(),
     );
