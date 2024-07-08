@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 class StorageService {
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
 
-  StorageService() ;
+  StorageService();
 
   Future<String?> uploadUserPfp(
       {required File file, required String uid}) async {
@@ -17,6 +17,8 @@ class StorageService {
     return task.then((p) {
       if (p.state == TaskState.success) {
         return fileRef.getDownloadURL();
+      } else {
+        return null;
       }
     });
   }
@@ -30,7 +32,21 @@ class StorageService {
     return task.then((p) {
       if (p.state == TaskState.success) {
         return fileRef.getDownloadURL();
+      } else {
+        return null;
       }
     });
+  }
+
+  Future<void> deleteProfilePicture(String imageUrl) async {
+    if (imageUrl.isNotEmpty) {
+      try {
+        Reference ref = FirebaseStorage.instance.refFromURL(imageUrl);
+        await ref.delete();
+      } catch (e) {
+        print("Error deleting profile picture: $e");
+        throw e; // Handle the error as per your app's requirements
+      }
+    }
   }
 }

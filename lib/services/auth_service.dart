@@ -57,4 +57,13 @@ class AuthService {
       _user = null;
     }
   }
+
+  Future<void> deleteFirebaseUser() async {
+    try {
+      await FirebaseAuth.instance.currentUser!.delete();
+    } catch (e) {
+      print("Error deleting Firebase user: $e");
+      throw e; // Handle the error as per your app's requirements
+    }
+  }
 }

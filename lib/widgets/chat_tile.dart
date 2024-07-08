@@ -10,16 +10,19 @@ class ChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 10.0),
-      splashColor: Colors.blueGrey[200],
-      horizontalTitleGap: 3.0,
+      tileColor: Theme.of(context).colorScheme.secondaryContainer,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10))),
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      splashColor: Theme.of(context).colorScheme.surfaceDim,
+      horizontalTitleGap: 10.0,
       minVerticalPadding: 4,
       onTap: () {
         onTap();
       },
       dense: false,
       leading: CircleAvatar(
-        radius: 50,
+        radius: 28,
         backgroundImage: NetworkImage(userProfile.pfpURL!),
       ),
       title: Text(

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserProfile {
   String? uid;
   String? name;
@@ -21,5 +23,24 @@ class UserProfile {
     data['pfpURL'] = pfpURL;
     data['uid'] = uid;
     return data;
+  }
+
+  factory UserProfile.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data()!;
+    return UserProfile(
+      uid: data['uid'],
+      name: data['name'],
+      pfpURL: data['pfpURL'],
+    );
+  }
+
+  // Method to convert UserProfile to a Firestore document
+  Map<String, dynamic> toFirestore() {
+    return {
+      'uid': uid,
+      'name': name,
+      'pfpURL': pfpURL,
+    };
   }
 }

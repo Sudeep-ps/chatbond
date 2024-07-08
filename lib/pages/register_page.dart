@@ -61,9 +61,9 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             _headerText(),
             if (!isloading) _registerForm(),
-            // const Spacer(
-            //   flex: 7,
-            // ),
+            const Spacer(
+              flex: 7,
+            ),
             if (!isloading) _loginAccountLink(),
             if (isloading)
               const Expanded(child: Center(child: CircularProgressIndicator()))

@@ -1,5 +1,6 @@
 import 'package:chatbond/pages/home_page.dart';
 import 'package:chatbond/pages/login_page.dart';
+import 'package:chatbond/pages/profile_page.dart';
 import 'package:chatbond/pages/register_page.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +11,7 @@ class NavigationService {
     "/login": (context) => const LoginPage(),
     "/register": (context) => const RegisterPage(),
     "/home": (context) => const HomePage(),
+    "/profile": (context) => ProfilePage(),
   };
 
   GlobalKey<NavigatorState>? get navigatorKey {
