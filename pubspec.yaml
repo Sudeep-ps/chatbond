@@ -48,6 +48,10 @@ dependencies:
   path: ^1.9.0
   emoji_picker_flutter: ^2.2.0
   
+  # Riverpod state management
+  riverpod: ^2.4.1
+  flutter_riverpod: ^2.4.1
+  
 
 dev_dependencies:
   flutter_test:
