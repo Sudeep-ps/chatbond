@@ -5,7 +5,9 @@ class SocketService {
   io.Socket? _socket;
 
   Future<void> connect(String accessToken) async {
-    if (_socket?.connected == true) return;
+    if (_socket != null) {
+      disconnect(); // always start clean, even if already connected
+    }
     _socket = io.io(
       '${ApiClient.baseUrl.replaceFirst('/api/v1', '')}/chat',
       io.OptionBuilder()

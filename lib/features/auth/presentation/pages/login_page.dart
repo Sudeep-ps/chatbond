@@ -8,6 +8,8 @@ import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../chat/presentation/providers/chat_provider.dart';
+
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -46,6 +48,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       state.when(
         data: (authUser) {
           if (authUser != null) {
+            ref.invalidate(authRemoteDataSourceProvider);
+            ref.invalidate(chatRemoteDataSourceProvider);
             _showToast('Login successful!', Icons.check);
             Navigator.of(context).pushReplacementNamed(AppConstants.homeRoute);
           }

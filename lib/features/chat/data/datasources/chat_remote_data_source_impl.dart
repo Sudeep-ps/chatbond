@@ -87,6 +87,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       final response =
           await _apiClient.dio.get('/users', queryParameters: {'q': query});
+      print('👤 RAW USERS RESPONSE: ${response.data}'); // temporary debug
       return (response.data as List)
           .map((j) => UserProfileEntity.fromJson(j))
           .toList();

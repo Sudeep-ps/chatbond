@@ -63,6 +63,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     ref.listen(createUserProfileProvider, (previous, state) {
       state.whenData((_) {
+        ref.invalidate(authRemoteDataSourceProvider);
+        ref.invalidate(chatRemoteDataSourceProvider);
         _showToast('User registered successfully!', Icons.check);
         Navigator.of(context).pushReplacementNamed(AppConstants.homeRoute);
       });

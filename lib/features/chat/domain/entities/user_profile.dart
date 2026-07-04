@@ -11,7 +11,7 @@ class UserProfileEntity {
 
   factory UserProfileEntity.fromJson(Map<String, dynamic> json) {
     return UserProfileEntity(
-      uid: json['id'] ?? json['uid'] ?? '',
+      uid: json['id'] ?? json['uid'] ?? json['_id'] ?? '',
       name: json['name'] ?? '',
       pfpURL: json['pfpUrl'] ?? json['pfpURL'],
     );

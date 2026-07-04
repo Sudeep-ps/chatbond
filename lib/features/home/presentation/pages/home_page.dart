@@ -22,11 +22,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   late TextEditingController _searchController;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    final apiClient = ref.read(apiClientProvider);
-    final token = await TokenStorage.getAccessToken();
-    if (token != null) ref.read(socketServiceProvider).connect(token);
+    _connectSocket();
     _searchController = TextEditingController();
     _searchController.addListener(_onSearchTextChanged);
   }
@@ -35,6 +33,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _connectSocket() async {
+    final token = await TokenStorage.getAccessToken();
+    if (token != null) ref.read(socketServiceProvider).connect(token);
   }
 
   void _onSearchTextChanged() {
@@ -69,6 +72,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     ref.listen(logoutProvider, (previous, state) {
       state.whenData((_) {
+        ref.read(socketServiceProvider).disconnect();
         _showToast('Successfully logged out', Icons.check);
         Navigator.of(context).pushReplacementNamed(AppConstants.loginRoute);
       });
@@ -152,6 +156,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: ChatTile(
                 userProfile: userProfile,
                 onTap: () async {
+                  print('👆 TAPPED USER PROFILE uid: "${userProfile.uid}"');
                   if (currentUserProfile.hasValue &&
                       currentUserProfile.value != null) {
                     final currentUser = currentUserProfile.value!;

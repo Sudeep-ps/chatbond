@@ -18,13 +18,13 @@ class StorageRemoteDataSourceImpl implements StorageRemoteDataSource {
       final uploadUrl = presign.data['uploadUrl'] as String;
       final key = presign.data['key'] as String;
 
-      final plainDio =
-          Dio(); // no auth header needed for the presigned S3 PUT itself
+      final plainDio = Dio();
       await plainDio.put(
         uploadUrl,
         data: file.openRead(),
         options: Options(
           headers: {'Content-Length': await file.length()},
+          contentType: 'image/${ext.replaceFirst('.', '')}',
         ),
       );
 
