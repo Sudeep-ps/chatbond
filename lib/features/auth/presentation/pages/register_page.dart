@@ -190,7 +190,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           if ((_registerFormKey.currentState?.validate() ?? false) &&
               (selectedImage != null)) {
             _registerFormKey.currentState?.save();
-            ref.read(signupProvider.notifier).signup(email!, password!);
+            ref.read(signupProvider.notifier).signup(email!, password!, name!);
           } else if (selectedImage == null) {
             _showToast('Please select a profile picture', Icons.warning);
           }

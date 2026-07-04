@@ -1,18 +1,17 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
 class AuthUser {
   final String uid;
   final String? email;
+  final String? name;
+  final String? pfpUrl;
 
-  AuthUser({
-    required this.uid,
-    required this.email,
-  });
+  AuthUser({required this.uid, this.email, this.name, this.pfpUrl});
 
-  factory AuthUser.fromFirebaseUser(User user) {
+  factory AuthUser.fromJson(Map<String, dynamic> json) {
     return AuthUser(
-      uid: user.uid,
-      email: user.email,
+      uid: json['id'] ?? '',
+      email: json['email'],
+      name: json['name'],
+      pfpUrl: json['pfpUrl'],
     );
   }
 }

@@ -9,6 +9,8 @@ import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/storage/token_storage.dart';
+
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -20,8 +22,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   late TextEditingController _searchController;
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
+    final apiClient = ref.read(apiClientProvider);
+    final token = await TokenStorage.getAccessToken();
+    if (token != null) ref.read(socketServiceProvider).connect(token);
     _searchController = TextEditingController();
     _searchController.addListener(_onSearchTextChanged);
   }

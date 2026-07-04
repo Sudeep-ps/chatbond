@@ -5,26 +5,18 @@ import 'package:chatbond/features/chat/domain/entities/message.dart';
 import 'package:chatbond/features/chat/domain/entities/user_profile.dart';
 import 'package:chatbond/features/chat/domain/repositories/chat_repository.dart';
 import 'package:chatbond/features/chat/domain/usecases/chat_usecases.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/websocket/socket_service.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/datasources/chat_remote_data_source.dart';
 
-// Firebase Providers
-final firestoreProvider = Provider<FirebaseFirestore>((ref) {
-  return FirebaseFirestore.instance;
-});
+final socketServiceProvider = Provider<SocketService>((ref) => SocketService());
 
-final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
-  return FirebaseAuth.instance;
-});
-
-// Data Source Provider
 final chatRemoteDataSourceProvider = Provider<ChatRemoteDataSource>((ref) {
-  final firestore = ref.watch(firestoreProvider);
-  final firebaseAuth = ref.watch(firebaseAuthProvider);
-  return ChatRemoteDataSourceImpl(firestore, firebaseAuth);
+  final apiClient = ref.watch(apiClientProvider); // from auth_provider.dart
+  final socketService = ref.watch(socketServiceProvider);
+  return ChatRemoteDataSourceImpl(apiClient, socketService);
 });
 
 // Repository Provider

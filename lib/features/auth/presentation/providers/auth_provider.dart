@@ -3,20 +3,16 @@ import 'package:chatbond/features/auth/data/repositories/auth_repository_impl.da
 import 'package:chatbond/features/auth/domain/entities/auth_user.dart';
 import 'package:chatbond/features/auth/domain/repositories/auth_repository.dart';
 import 'package:chatbond/features/auth/domain/usecases/auth_usecases.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_client.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 
-// Firebase Auth Provider
-final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
-  return FirebaseAuth.instance;
-});
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
-// Data Source Provider
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
-  final firebaseAuth = ref.watch(firebaseAuthProvider);
-  return AuthRemoteDataSourceImpl(firebaseAuth);
+  final apiClient = ref.watch(apiClientProvider);
+  return AuthRemoteDataSourceImpl(apiClient);
 });
 
 // Repository Provider
@@ -90,9 +86,9 @@ class SignupNotifier extends StateNotifier<AsyncValue<AuthUser?>> {
   SignupNotifier(this._signupUsecase) : super(const AsyncValue.data(null));
   final SignupUsecase _signupUsecase;
 
-  Future<void> signup(String email, String password) async {
+  Future<void> signup(String email, String password, String name) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _signupUsecase(email, password));
+    state = await AsyncValue.guard(() => _signupUsecase(email, password, name));
   }
 }
 

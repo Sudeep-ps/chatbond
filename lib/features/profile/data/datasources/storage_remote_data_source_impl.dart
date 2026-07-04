@@ -1,64 +1,52 @@
 import 'dart:io';
-
 import 'package:chatbond/core/exceptions/exceptions.dart';
+import 'package:chatbond/core/network/api_client.dart';
 import 'package:chatbond/features/profile/data/datasources/storage_remote_data_source.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 
 class StorageRemoteDataSourceImpl implements StorageRemoteDataSource {
-  final FirebaseStorage _firebaseStorage;
+  final ApiClient _apiClient;
 
-  StorageRemoteDataSourceImpl(this._firebaseStorage);
+  StorageRemoteDataSourceImpl(this._apiClient);
 
-  @override
-  Future<String?> uploadUserProfilePicture(File file, String uid) async {
+  Future<String?> _uploadAndGetUrl(File file, String type) async {
     try {
-      final Reference fileRef = _firebaseStorage
-          .ref('users/pfp')
-          .child('$uid${p.extension(file.path)}');
-      final UploadTask task = fileRef.putFile(file);
-      final TaskSnapshot snapshot = await task;
+      final ext = p.extension(file.path);
+      final presign = await _apiClient.dio
+          .post('/storage/presign', data: {'ext': ext, 'type': type});
+      final uploadUrl = presign.data['uploadUrl'] as String;
+      final key = presign.data['key'] as String;
 
-      if (snapshot.state == TaskState.success) {
-        return await fileRef.getDownloadURL();
-      }
-      return null;
-    } on FirebaseException catch (e) {
-      throw StorageException('Upload profile picture failed: ${e.message}');
-    } catch (e) {
-      throw StorageException('Unknown error uploading profile picture: $e');
+      final plainDio =
+          Dio(); // no auth header needed for the presigned S3 PUT itself
+      await plainDio.put(
+        uploadUrl,
+        data: file.openRead(),
+        options: Options(
+          headers: {'Content-Length': await file.length()},
+        ),
+      );
+
+      final viewUrl =
+          await _apiClient.dio.post('/storage/view-url', data: {'key': key});
+      return viewUrl.data as String;
+    } on DioException catch (e) {
+      throw StorageException(
+          e.response?.data['message']?.toString() ?? 'Upload failed');
     }
   }
 
   @override
-  Future<String?> uploadChatImage(File file, String chatID) async {
-    try {
-      final Reference fileRef = _firebaseStorage.ref('chats/$chatID').child(
-          '${DateTime.now().toIso8601String()}${p.extension(file.path)}');
-      final UploadTask task = fileRef.putFile(file);
-      final TaskSnapshot snapshot = await task;
+  Future<String?> uploadUserProfilePicture(File file, String uid) =>
+      _uploadAndGetUrl(file, 'pfp');
 
-      if (snapshot.state == TaskState.success) {
-        return await fileRef.getDownloadURL();
-      }
-      return null;
-    } on FirebaseException catch (e) {
-      throw StorageException('Upload chat image failed: ${e.message}');
-    } catch (e) {
-      throw StorageException('Unknown error uploading chat image: $e');
-    }
-  }
+  @override
+  Future<String?> uploadChatImage(File file, String chatID) =>
+      _uploadAndGetUrl(file, 'chat');
 
   @override
   Future<void> deleteProfilePicture(String imageUrl) async {
-    try {
-      if (imageUrl.isEmpty) return;
-      final Reference ref = FirebaseStorage.instance.refFromURL(imageUrl);
-      await ref.delete();
-    } on FirebaseException catch (e) {
-      throw StorageException('Delete profile picture failed: ${e.message}');
-    } catch (e) {
-      throw StorageException('Unknown error deleting profile picture: $e');
-    }
+    // no delete endpoint exists on the backend yet — add a DELETE /storage route there first if you need this
   }
 }

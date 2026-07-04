@@ -1,81 +1,82 @@
+import 'dart:convert';
 import 'package:chatbond/core/exceptions/exceptions.dart';
+import 'package:chatbond/core/network/api_client.dart';
+import 'package:chatbond/core/storage/auth_session.dart';
+import 'package:chatbond/core/storage/token_storage.dart';
 import 'package:chatbond/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:chatbond/features/auth/domain/entities/auth_user.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:dio/dio.dart';
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final FirebaseAuth _firebaseAuth;
+  final ApiClient _apiClient;
 
-  AuthRemoteDataSourceImpl(this._firebaseAuth);
+  AuthRemoteDataSourceImpl(this._apiClient);
 
-  @override
-  Stream<AuthUser?> authStateChanges() {
-    return _firebaseAuth.authStateChanges().map((user) {
-      return user != null ? AuthUser.fromFirebaseUser(user) : null;
-    });
-  }
-
-  @override
-  Future<void> deleteUser() async {
-    try {
-      await _firebaseAuth.currentUser?.delete();
-    } on FirebaseAuthException catch (e) {
-      throw AuthException('Failed to delete user: ${e.message}');
-    } catch (e) {
-      throw AuthException('Unknown error deleting user: $e');
+  // call once at app startup, before runApp, to restore a cached session
+  static Future<void> bootstrap() async {
+    final userJson = await TokenStorage.getUserJson();
+    final accessToken = await TokenStorage.getAccessToken();
+    if (userJson != null && accessToken != null) {
+      AuthSession.currentUser = AuthUser.fromJson(jsonDecode(userJson));
     }
   }
 
-  @override
-  AuthUser? getCurrentUser() {
-    final user = _firebaseAuth.currentUser;
-    return user != null ? AuthUser.fromFirebaseUser(user) : null;
+  Future<AuthUser> _handleAuthResponse(Response response) async {
+    final data = response.data;
+    final user = AuthUser.fromJson(data['user']);
+    await TokenStorage.saveTokens(data['accessToken'], data['refreshToken']);
+    await TokenStorage.saveUserJson(jsonEncode(data['user']));
+    AuthSession.update(user);
+    return user;
   }
 
   @override
   Future<AuthUser> login(String email, String password) async {
     try {
-      final credential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      if (credential.user != null) {
-        return AuthUser.fromFirebaseUser(credential.user!);
-      }
-      throw AuthException('Login failed: No user returned');
-    } on FirebaseAuthException catch (e) {
-      throw AuthException('Login failed: ${e.message}');
-    } catch (e) {
-      throw AuthException('Unknown error during login: $e');
+      final response = await _apiClient.dio.post('/auth/login', data: {
+        'email': email,
+        'password': password,
+      });
+      return _handleAuthResponse(response);
+    } on DioException catch (e) {
+      throw AuthException(
+          e.response?.data['message']?.toString() ?? 'Login failed');
+    }
+  }
+
+  @override
+  Future<AuthUser> signup(String email, String password, String name) async {
+    try {
+      final response = await _apiClient.dio.post('/auth/register', data: {
+        'email': email,
+        'password': password,
+        'name': name,
+      });
+      return _handleAuthResponse(response);
+    } on DioException catch (e) {
+      throw AuthException(
+          e.response?.data['message']?.toString() ?? 'Signup failed');
     }
   }
 
   @override
   Future<void> logout() async {
-    try {
-      await _firebaseAuth.signOut();
-    } on FirebaseAuthException catch (e) {
-      throw AuthException('Logout failed: ${e.message}');
-    } catch (e) {
-      throw AuthException('Unknown error during logout: $e');
-    }
+    await TokenStorage.clear();
+    AuthSession.update(null);
   }
 
   @override
-  Future<AuthUser> signup(String email, String password) async {
-    try {
-      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      if (credential.user != null) {
-        return AuthUser.fromFirebaseUser(credential.user!);
-      }
-      throw AuthException('Signup failed: No user returned');
-    } on FirebaseAuthException catch (e) {
-      throw AuthException('Signup failed: ${e.message}');
-    } catch (e) {
-      throw AuthException('Unknown error during signup: $e');
-    }
+  Future<void> deleteUser() async {
+    // no DELETE /users/me endpoint exists on the backend yet — add one there first
+    throw AuthException('Account deletion isn\'t supported by the server yet');
+  }
+
+  @override
+  AuthUser? getCurrentUser() => AuthSession.currentUser;
+
+  @override
+  Stream<AuthUser?> authStateChanges() async* {
+    yield AuthSession.currentUser;
+    yield* AuthSession.changes;
   }
 }

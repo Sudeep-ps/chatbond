@@ -174,7 +174,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             senderID: chatMessage.user.id,
             content: chatMessage.medias!.first.url,
             messageType: MessageType.Image,
-            sentAt: Timestamp.fromDate(chatMessage.createdAt));
+            sentAt: chatMessage.createdAt);
         await ref
             .read(sendMessageProvider.notifier)
             .sendMessage(currentAuthUser.uid, widget.chatUser!.uid, message);
@@ -184,7 +184,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           senderID: currentAuthUser.uid,
           content: chatMessage.text,
           messageType: MessageType.Text,
-          sentAt: Timestamp.fromDate(chatMessage.createdAt));
+          sentAt: chatMessage.createdAt);
       await ref
           .read(sendMessageProvider.notifier)
           .sendMessage(currentAuthUser.uid, widget.chatUser!.uid, message);
@@ -197,7 +197,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       if (m.messageType == MessageType.Image) {
         return ChatMessage(
             user: m.senderID == currentUser!.id ? currentUser! : otherUser!,
-            createdAt: m.sentAt.toDate(),
+            createdAt: m.sentAt,
             medias: [
               ChatMedia(url: m.content, fileName: "", type: MediaType.image)
             ]);
@@ -205,7 +205,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         return ChatMessage(
             user: m.senderID == currentUser!.id ? currentUser! : otherUser!,
             text: m.content,
-            createdAt: m.sentAt.toDate());
+            createdAt: m.sentAt);
       }
     }).toList();
     chatMessages.sort((a, b) => b.createdAt.compareTo(a.createdAt));

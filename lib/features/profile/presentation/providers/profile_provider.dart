@@ -7,14 +7,10 @@ import 'package:chatbond/features/profile/data/repositories/storage_repository_i
 import 'package:chatbond/features/profile/domain/repositories/media_repository.dart';
 import 'package:chatbond/features/profile/domain/repositories/storage_repository.dart';
 import 'package:chatbond/features/profile/domain/usecases/profile_usecases.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-// Firebase Providers
-final firebaseStorageProvider = Provider<FirebaseStorage>((ref) {
-  return FirebaseStorage.instance;
-});
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 // Image Picker Provider
 final imagePickerProvider = Provider<ImagePicker>((ref) {
@@ -24,8 +20,8 @@ final imagePickerProvider = Provider<ImagePicker>((ref) {
 // Data Sources Providers
 final storageRemoteDataSourceProvider =
     Provider<StorageRemoteDataSourceImpl>((ref) {
-  final firebaseStorage = ref.watch(firebaseStorageProvider);
-  return StorageRemoteDataSourceImpl(firebaseStorage);
+  final apiClient = ref.watch(apiClientProvider); // from auth_provider.dart
+  return StorageRemoteDataSourceImpl(apiClient);
 });
 
 final mediaLocalDataSourceProvider = Provider<MediaLocalDataSourceImpl>((ref) {

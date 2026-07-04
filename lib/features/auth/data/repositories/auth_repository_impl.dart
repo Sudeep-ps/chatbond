@@ -33,7 +33,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthUser> signup(String email, String password) {
-    return _remoteDataSource.signup(email, password);
+  Future<AuthUser> signup(String email, String password, String name) {
+    return _remoteDataSource.signup(email, password, name);
   }
 }

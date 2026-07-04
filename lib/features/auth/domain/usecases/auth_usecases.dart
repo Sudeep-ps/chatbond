@@ -13,11 +13,10 @@ class LoginUsecase {
 
 class SignupUsecase {
   final AuthRepository repository;
-
   SignupUsecase(this.repository);
 
-  Future<AuthUser> call(String email, String password) {
-    return repository.signup(email, password);
+  Future<AuthUser> call(String email, String password, String name) {
+    return repository.signup(email, password, name);
   }
 }
 
