@@ -27,7 +27,6 @@ class StorageRemoteDataSourceImpl implements StorageRemoteDataSource {
           contentType: 'image/${ext.replaceFirst('.', '')}',
         ),
       );
-
       final viewUrl =
           await _apiClient.dio.post('/storage/view-url', data: {'key': key});
       return viewUrl.data as String;

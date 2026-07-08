@@ -156,7 +156,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: ChatTile(
                 userProfile: userProfile,
                 onTap: () async {
-                  print('👆 TAPPED USER PROFILE uid: "${userProfile.uid}"');
                   if (currentUserProfile.hasValue &&
                       currentUserProfile.value != null) {
                     final currentUser = currentUserProfile.value!;

@@ -7,6 +7,7 @@ import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../chat/domain/entities/user_profile.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -124,29 +125,48 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final imageState = ref.read(getImageFromGalleryProvider);
 
     imageState.whenData((file) async {
-      if (file != null) {
-        final currentUser = ref.read(currentUserProvider);
-        if (currentUser != null) {
-          // Delete old profile picture if exists
-          final userProfile = ref.read(currentUserProfileProvider);
-          userProfile.whenData((profile) {
-            if (profile?.pfpURL != null) {
-              ref
-                  .read(deleteProfilePictureProvider.notifier)
-                  .deleteProfilePicture(profile!.pfpURL!);
-            }
-          });
+      if (file == null) return;
 
-          // Upload new profile picture
-          await ref
-              .read(uploadProfilePictureProvider.notifier)
-              .uploadProfilePicture(file, currentUser.uid);
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser == null) return;
 
-          // Refresh the current user profile
-          ref.refresh(currentUserProfileProvider);
-          _showToast('Profile picture updated!', Icons.check);
-        }
+      // capture the old URL before we overwrite it, so we can clean it up after
+      final oldProfile = ref.read(currentUserProfileProvider).valueOrNull;
+      final oldPfpUrl = oldProfile?.pfpURL;
+
+      // upload new picture
+      await ref
+          .read(uploadProfilePictureProvider.notifier)
+          .uploadProfilePicture(file, currentUser.uid);
+
+      final uploadState = ref.read(uploadProfilePictureProvider);
+      final newUrl = uploadState.valueOrNull;
+
+      if (newUrl == null) {
+        _showToast('Failed to upload profile picture', Icons.error);
+        return;
       }
+
+      // this was the missing step — actually persist the new URL to the backend
+      final updatedProfile = UserProfileEntity(
+        uid: currentUser.uid,
+        name: oldProfile?.name ?? '',
+        pfpURL: newUrl,
+      );
+      await ref
+          .read(createUserProfileProvider.notifier)
+          .createProfile(updatedProfile);
+
+      // now it's safe to delete the old picture from storage, after the new one is confirmed saved
+      if (oldPfpUrl != null) {
+        ref
+            .read(deleteProfilePictureProvider.notifier)
+            .deleteProfilePicture(oldPfpUrl);
+      }
+
+      // force the UI to refetch — now there's actually something new to fetch
+      ref.invalidate(currentUserProfileProvider);
+      _showToast('Profile picture updated!', Icons.check);
     });
   }
 
