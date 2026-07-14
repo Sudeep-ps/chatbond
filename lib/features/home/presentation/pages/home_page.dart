@@ -86,27 +86,47 @@ class _HomePageState extends ConsumerState<HomePage> {
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.blueAccent,
+          // actions: [
+          //   PopupMenuButton(
+          //       shape: RoundedRectangleBorder(
+          //           borderRadius: BorderRadius.circular(25)),
+          //       itemBuilder: (context) {
+          //         return [
+          //           PopupMenuItem(
+          //             child: const Text('Profile Details'),
+          //             onTap: () async {
+          //               Navigator.of(context)
+          //                   .pushNamed(AppConstants.profileRoute);
+          //             },
+          //           ),
+          //           PopupMenuItem(
+          //             child: const Text('Log out'),
+          //             onTap: () async {
+          //             ref.read(logoutProvider.notifier).logout();
+          //             },
+          //           ),
+          //         ];
+          //       }),
+          // ]
           actions: [
-            PopupMenuButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25)),
-                itemBuilder: (context) {
-                  return [
-                    PopupMenuItem(
-                      child: const Text('Profile Details'),
-                      onTap: () async {
-                        Navigator.of(context)
-                            .pushNamed(AppConstants.profileRoute);
-                      },
-                    ),
-                    PopupMenuItem(
-                      child: const Text('Log out'),
-                      onTap: () async {
-                        ref.read(logoutProvider.notifier).logout();
-                      },
-                    ),
-                  ];
-                }),
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Center(
+                  child: InkWell(
+                onTap: () async {
+                  Navigator.of(context).pushNamed(AppConstants.profileRoute);
+                },
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundImage: currentUserProfile.hasValue &&
+                          currentUserProfile.value != null &&
+                          currentUserProfile.value!.pfpURL != null
+                      ? NetworkImage(currentUserProfile.value!.pfpURL!)
+                      : const NetworkImage(
+                          'https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg'),
+                ),
+              )),
+            ),
           ]),
       body: _buildUI(context),
     );

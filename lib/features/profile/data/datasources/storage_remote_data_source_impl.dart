@@ -29,7 +29,7 @@ class StorageRemoteDataSourceImpl implements StorageRemoteDataSource {
       );
       final viewUrl =
           await _apiClient.dio.post('/storage/view-url', data: {'key': key});
-      return viewUrl.data as String;
+      return key;
     } on DioException catch (e) {
       throw StorageException(
           e.response?.data['message']?.toString() ?? 'Upload failed');

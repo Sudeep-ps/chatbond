@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../chat/domain/entities/user_profile.dart';
+import '../widgets/settings_group_card.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -63,53 +64,81 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               if (userProfile == null) {
                 return const Center(child: Text('No profile data found.'));
               }
-              return Column(
-                children: [
-                  Center(
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: MediaQuery.of(context).size.width * 0.20,
-                          backgroundImage: userProfile.pfpURL != null
-                              ? NetworkImage(userProfile.pfpURL!)
-                              : const NetworkImage(
-                                  'https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg'),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: InkWell(
-                            onTap: _pickImage,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.blueAccent,
-                              ),
-                              child: const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Center(
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: MediaQuery.of(context).size.width * 0.20,
+                            backgroundImage: userProfile.pfpURL != null
+                                ? NetworkImage(userProfile.pfpURL!)
+                                : const NetworkImage(
+                                    'https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg'),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: InkWell(
+                              onTap: _pickImage,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.blueAccent,
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      userProfile.name,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SettingsGroupCard(
+                      backgroundColor: Colors.white70,
+                      items: [
+                        SettingsTileData(
+                          icon: Icons.person_outline,
+                          title: userProfile.name,
+                          //trailingText: userProfile.name,
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    userProfile.name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 20),
+                    SettingsGroupCard(
+                      items: [
+                        SettingsTileData(
+                          icon: Icons.delete_outline,
+                          title: 'Delete Account',
+                          trailingText: userProfile.name,
+                          onTap: () => _deleteAccount(userProfile),
+                        ),
+                        SettingsTileData(
+                          icon: Icons.logout,
+                          title: 'Logout',
+                          onTap: () async {
+                            ref.read(logoutProvider.notifier).logout();
+                          },
+                        )
+                      ],
                     ),
-                  ),
-                  TextButton(
-                      onPressed: () => _deleteAccount(userProfile),
-                      child: const Text("Delete account"))
-                ],
+                  ],
+                ),
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),

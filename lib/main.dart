@@ -7,6 +7,7 @@ import 'package:chatbond/features/chat/presentation/pages/chat_page.dart';
 import 'package:chatbond/features/home/presentation/pages/home_page.dart';
 import 'package:chatbond/features/profile/presentation/pages/profile_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/auth/data/datasources/auth_remote_data_source_impl.dart';
@@ -14,6 +15,9 @@ import 'features/auth/data/datasources/auth_remote_data_source_impl.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthRemoteDataSourceImpl.bootstrap();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   runApp(const ProviderScope(child: MyApp()));
 }
 

@@ -140,6 +140,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final loginState = ref.watch(loginProvider);
 
     return SizedBox(
+      height: MediaQuery.sizeOf(context).height * 0.04,
       width: MediaQuery.sizeOf(context).width,
       child: MaterialButton(
         onPressed: loginState.isLoading
@@ -159,7 +160,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               )
             : const Text(
                 "Login",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600),
               ),
       ),
     );

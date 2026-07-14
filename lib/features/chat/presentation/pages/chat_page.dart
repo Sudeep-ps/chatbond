@@ -4,7 +4,6 @@ import 'package:chatbond/features/chat/domain/entities/message.dart';
 import 'package:chatbond/features/chat/domain/entities/user_profile.dart';
 import 'package:chatbond/features/chat/presentation/providers/chat_provider.dart';
 import 'package:chatbond/features/profile/presentation/providers/profile_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';

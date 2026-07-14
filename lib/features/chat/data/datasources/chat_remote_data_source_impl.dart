@@ -16,6 +16,28 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
   ChatRemoteDataSourceImpl(this._apiClient, this._socketService);
 
+  Future<String?> _resolveImageKey(String? key) async {
+    if (key == null || key.isEmpty) return key;
+    try {
+      final response =
+          await _apiClient.dio.post('/storage/view-url', data: {'key': key});
+      return response.data as String;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<MessageEntity> _resolveMessage(MessageEntity m) async {
+    if (m.messageType != MessageType.Image) return m;
+    final url = await _resolveImageKey(m.content);
+    return MessageEntity(
+        id: m.id,
+        senderID: m.senderID,
+        content: url ?? m.content,
+        messageType: m.messageType,
+        sentAt: m.sentAt);
+  }
+
   String _pairKey(String uid1, String uid2) {
     final sorted = [uid1, uid2]..sort();
     return '${sorted[0]}-${sorted[1]}';
@@ -65,7 +87,10 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   Future<UserProfileEntity> getCurrentUserProfile() async {
     try {
       final response = await _apiClient.dio.get('/users/me');
-      return UserProfileEntity.fromJson(response.data);
+      final profile = UserProfileEntity.fromJson(response.data);
+      final resolvedUrl = await _resolveImageKey(profile.pfpURL);
+      return UserProfileEntity(
+          uid: profile.uid, name: profile.name, pfpURL: resolvedUrl);
     } on DioException catch (e) {
       throw FirestoreException(
           e.response?.data['message']?.toString() ?? 'Could not load profile');
@@ -87,10 +112,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       final response =
           await _apiClient.dio.get('/users', queryParameters: {'q': query});
-      print('👤 RAW USERS RESPONSE: ${response.data}'); // temporary debug
-      return (response.data as List)
+      final profiles = (response.data as List)
           .map((j) => UserProfileEntity.fromJson(j))
           .toList();
+      return Future.wait(profiles.map((p) async {
+        final url = await _resolveImageKey(p.pfpURL);
+        return UserProfileEntity(uid: p.uid, name: p.name, pfpURL: url);
+      }));
     } on DioException catch (e) {
       throw FirestoreException(
           e.response?.data['message']?.toString() ?? 'Could not load users');
@@ -121,23 +149,24 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         final chatId = await _resolveChatId(uid1, uid2);
         final history = await _apiClient.dio
             .get('/chats/$chatId/messages', queryParameters: {'take': 50});
-        final messages = (history.data as List)
-            .map((j) => MessageEntity.fromJson(j))
-            .toList()
-            .reversed // API returns newest-first; UI wants chronological order
-            .toList();
+        final messages = await Future.wait(
+          (history.data as List)
+              .map((j) => MessageEntity.fromJson(j))
+              .toList()
+              .reversed
+              .map(_resolveMessage),
+        );
 
         controller.add(ChatEntity(
             id: chatId, participants: [uid1, uid2], messages: messages));
 
         _socketService.joinChat(chatId);
-        _socketService.onNewMessage((data) {
-          if (data['chatId'] != chatId && data['_id'] == null)
-            return; // ignore events for other chats
+        _socketService.onNewMessage((data) async {
           final incomingChatId = data['chatId'] ?? chatId;
           if (incomingChatId != chatId) return;
-          final newMessage = MessageEntity.fromJson(
+          final rawMessage = MessageEntity.fromJson(
               data is Map && data['message'] != null ? data['message'] : data);
+          final newMessage = await _resolveMessage(rawMessage);
           messages.add(newMessage);
           controller.add(ChatEntity(
               id: chatId,
