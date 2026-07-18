@@ -47,16 +47,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     ref.listen(loginProvider, (previous, state) {
       state.when(
         data: (authUser) {
-          if (authUser != null) {
-            ref.invalidate(authRemoteDataSourceProvider);
-            ref.invalidate(chatRemoteDataSourceProvider);
-            _showToast('Login successful!', Icons.check);
-            Navigator.of(context).pushReplacementNamed(AppConstants.homeRoute);
-          }
+          if (authUser == null) return;
+
+          // Clear the provider state before navigating
+          ref.read(loginProvider.notifier).reset();
+
+          ref.invalidate(authRemoteDataSourceProvider);
+          ref.invalidate(chatRemoteDataSourceProvider);
+
+          _showToast('Login successful!', Icons.check);
+
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              AppConstants.homeRoute, (route) => false);
         },
         loading: () {},
         error: (error, stackTrace) {
           _showToast('Failed to login, Please try again', Icons.error);
+
+          // Clear the error state too
+          ref.read(loginProvider.notifier).reset();
         },
       );
     });
@@ -75,6 +84,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         children: [
           _headerText(),
           _loginForm(context),
+          _forgotPasswordLink(context),
           _createAnAccountLink(context),
         ],
       ),
@@ -187,5 +197,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
           )
         ]));
+  }
+
+  Widget _forgotPasswordLink(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pushNamed(AppConstants.forgotPasswordRoute);
+        },
+        child: const Text(
+          'Forgot password?',
+          style: TextStyle(fontWeight: FontWeight.w800, color: Colors.blue),
+        ),
+      ),
+    );
   }
 }

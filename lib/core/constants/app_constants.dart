@@ -1,6 +1,9 @@
 class AppConstants {
   static const String loginRoute = '/login';
   static const String registerRoute = '/register';
+  static const String verifyOtpRoute = '/verify-otp';
+  static const String forgotPasswordRoute = '/forgot-password';
+  static const String resetPasswordRoute = '/reset-password';
   static const String homeRoute = '/home';
   static const String profileRoute = '/profile';
   static const String chatRoute = '/chat';

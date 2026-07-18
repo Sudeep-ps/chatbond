@@ -1,6 +1,7 @@
 import 'package:chatbond/features/auth/data/datasources/auth_remote_data_source_impl.dart';
 import 'package:chatbond/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:chatbond/features/auth/domain/entities/auth_user.dart';
+import 'package:chatbond/features/auth/domain/entities/verify_otp_response.dart';
 import 'package:chatbond/features/auth/domain/repositories/auth_repository.dart';
 import 'package:chatbond/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +31,26 @@ final loginUsecaseProvider = Provider<LoginUsecase>((ref) {
 final signupUsecaseProvider = Provider<SignupUsecase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SignupUsecase(repository);
+});
+
+final verifyOtpUsecaseProvider = Provider<VerifyOtpUsecase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return VerifyOtpUsecase(repository);
+});
+
+final resendOtpUsecaseProvider = Provider<ResendOtpUsecase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return ResendOtpUsecase(repository);
+});
+
+final forgotPasswordUsecaseProvider = Provider<ForgotPasswordUsecase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return ForgotPasswordUsecase(repository);
+});
+
+final resetPasswordUsecaseProvider = Provider<ResetPasswordUsecase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return ResetPasswordUsecase(repository);
 });
 
 final logoutUsecaseProvider = Provider<LogoutUsecase>((ref) {
@@ -73,6 +94,10 @@ class LoginNotifier extends StateNotifier<AsyncValue<AuthUser?>> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _loginUsecase(email, password));
   }
+
+  void reset() {
+    state = const AsyncValue.data(null);
+  }
 }
 
 final loginProvider =
@@ -98,22 +123,97 @@ final signupProvider =
   return SignupNotifier(usecase);
 });
 
-// Logout State Notifier
-class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
-  LogoutNotifier(this._logoutUsecase) : super(const AsyncValue.data(null));
-  final LogoutUsecase _logoutUsecase;
+class VerifyOtpNotifier extends StateNotifier<AsyncValue<VerifyOtpResponse?>> {
+  VerifyOtpNotifier(this._verifyOtpUsecase)
+      : super(const AsyncValue.data(null));
+  final VerifyOtpUsecase _verifyOtpUsecase;
 
-  Future<void> logout() async {
+  Future<void> verifyOtp(String email, String otp, String purpose) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _logoutUsecase());
+    state =
+        await AsyncValue.guard(() => _verifyOtpUsecase(email, otp, purpose));
   }
 }
 
-final logoutProvider =
-    StateNotifierProvider<LogoutNotifier, AsyncValue<void>>((ref) {
-  final usecase = ref.watch(logoutUsecaseProvider);
-  return LogoutNotifier(usecase);
+final verifyOtpProvider =
+    StateNotifierProvider<VerifyOtpNotifier, AsyncValue<VerifyOtpResponse?>>(
+        (ref) {
+  final usecase = ref.watch(verifyOtpUsecaseProvider);
+  return VerifyOtpNotifier(usecase);
 });
+
+class ResendOtpNotifier extends StateNotifier<AsyncValue<void>> {
+  ResendOtpNotifier(this._resendOtpUsecase)
+      : super(const AsyncValue.data(null));
+  final ResendOtpUsecase _resendOtpUsecase;
+
+  Future<void> resendOtp(String email, String purpose) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _resendOtpUsecase(email, purpose));
+  }
+}
+
+final resendOtpProvider =
+    StateNotifierProvider<ResendOtpNotifier, AsyncValue<void>>((ref) {
+  final usecase = ref.watch(resendOtpUsecaseProvider);
+  return ResendOtpNotifier(usecase);
+});
+
+class ForgotPasswordNotifier extends StateNotifier<AsyncValue<void>> {
+  ForgotPasswordNotifier(this._forgotPasswordUsecase)
+      : super(const AsyncValue.data(null));
+  final ForgotPasswordUsecase _forgotPasswordUsecase;
+
+  Future<void> forgotPassword(String email) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _forgotPasswordUsecase(email));
+  }
+}
+
+final forgotPasswordProvider =
+    StateNotifierProvider<ForgotPasswordNotifier, AsyncValue<void>>((ref) {
+  final usecase = ref.watch(forgotPasswordUsecaseProvider);
+  return ForgotPasswordNotifier(usecase);
+});
+
+class ResetPasswordNotifier extends StateNotifier<AsyncValue<void>> {
+  ResetPasswordNotifier(this._resetPasswordUsecase)
+      : super(const AsyncValue.data(null));
+  final ResetPasswordUsecase _resetPasswordUsecase;
+
+  Future<void> resetPassword(String resetToken, String password) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(
+        () => _resetPasswordUsecase(resetToken, password));
+  }
+}
+
+final resetPasswordProvider =
+    StateNotifierProvider<ResetPasswordNotifier, AsyncValue<void>>((ref) {
+  final usecase = ref.watch(resetPasswordUsecaseProvider);
+  return ResetPasswordNotifier(usecase);
+});
+
+// Logout State Notifier
+// class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
+//   LogoutNotifier(this._logoutUsecase) : super(const AsyncValue.data(null));
+//   final LogoutUsecase _logoutUsecase;
+
+//   Future<void> logout() async {
+//     state = const AsyncValue.loading();
+//     state = await AsyncValue.guard(() => _logoutUsecase());
+//   }
+
+//   void reset() {
+//     state = const AsyncValue.data(null);
+//   }
+// }
+
+// final logoutProvider =
+//     StateNotifierProvider<LogoutNotifier, AsyncValue<void>>((ref) {
+//   final usecase = ref.watch(logoutUsecaseProvider);
+//   return LogoutNotifier(usecase);
+// });
 
 // Delete User State Notifier
 class DeleteUserNotifier extends StateNotifier<AsyncValue<void>> {

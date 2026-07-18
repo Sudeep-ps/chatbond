@@ -1,4 +1,5 @@
 import 'package:chatbond/features/auth/domain/entities/auth_user.dart';
+import 'package:chatbond/features/auth/domain/entities/verify_otp_response.dart';
 import 'package:chatbond/features/auth/domain/repositories/auth_repository.dart';
 
 class LoginUsecase {
@@ -17,6 +18,42 @@ class SignupUsecase {
 
   Future<AuthUser> call(String email, String password, String name) {
     return repository.signup(email, password, name);
+  }
+}
+
+class VerifyOtpUsecase {
+  final AuthRepository repository;
+  VerifyOtpUsecase(this.repository);
+
+  Future<VerifyOtpResponse?> call(String email, String otp, String purpose) {
+    return repository.verifyOtp(email, otp, purpose);
+  }
+}
+
+class ResendOtpUsecase {
+  final AuthRepository repository;
+  ResendOtpUsecase(this.repository);
+
+  Future<void> call(String email, String purpose) {
+    return repository.resendOtp(email, purpose);
+  }
+}
+
+class ForgotPasswordUsecase {
+  final AuthRepository repository;
+  ForgotPasswordUsecase(this.repository);
+
+  Future<void> call(String email) {
+    return repository.forgotPassword(email);
+  }
+}
+
+class ResetPasswordUsecase {
+  final AuthRepository repository;
+  ResetPasswordUsecase(this.repository);
+
+  Future<void> call(String email, String password) {
+    return repository.resetPassword(email, password);
   }
 }
 
