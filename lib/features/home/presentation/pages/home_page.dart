@@ -70,14 +70,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final currentUserProfile = ref.watch(currentUserProfileProvider);
 
-    ref.listen(logoutProvider, (previous, state) {
-      state.whenData((_) {
-        ref.read(socketServiceProvider).disconnect();
-        _showToast('Successfully logged out', Icons.check);
-        Navigator.of(context).pushReplacementNamed(AppConstants.loginRoute);
-      });
-    });
-
     return Scaffold(
       appBar: AppBar(
           centerTitle: true,
@@ -86,28 +78,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.blueAccent,
-          // actions: [
-          //   PopupMenuButton(
-          //       shape: RoundedRectangleBorder(
-          //           borderRadius: BorderRadius.circular(25)),
-          //       itemBuilder: (context) {
-          //         return [
-          //           PopupMenuItem(
-          //             child: const Text('Profile Details'),
-          //             onTap: () async {
-          //               Navigator.of(context)
-          //                   .pushNamed(AppConstants.profileRoute);
-          //             },
-          //           ),
-          //           PopupMenuItem(
-          //             child: const Text('Log out'),
-          //             onTap: () async {
-          //             ref.read(logoutProvider.notifier).logout();
-          //             },
-          //           ),
-          //         ];
-          //       }),
-          // ]
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),

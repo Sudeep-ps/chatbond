@@ -7,6 +7,7 @@ import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../chat/domain/entities/user_profile.dart';
 import '../widgets/settings_group_card.dart';
 
@@ -132,7 +133,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           icon: Icons.logout,
                           title: 'Logout',
                           onTap: () async {
-                            ref.read(logoutProvider.notifier).logout();
+                            try {
+                              await ref.read(logoutUsecaseProvider)();
+
+                              ref.read(socketServiceProvider).disconnect();
+
+                              _showToast(
+                                  'Successfully logged out', Icons.check);
+
+                              if (!mounted) return;
+
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                AppConstants.loginRoute,
+                                (_) => false,
+                              );
+                            } catch (e) {
+                              _showToast(
+                                e.toString(),
+                                Icons.error,
+                              );
+                            }
                           },
                         )
                       ],

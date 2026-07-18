@@ -4,8 +4,6 @@ import 'package:chatbond/core/constants/app_constants.dart';
 import 'package:chatbond/core/widgets/custom_formfield.dart';
 import 'package:chatbond/consts.dart';
 import 'package:chatbond/features/auth/presentation/providers/auth_provider.dart';
-import 'package:chatbond/features/chat/domain/entities/user_profile.dart';
-import 'package:chatbond/features/chat/presentation/providers/chat_provider.dart';
 import 'package:chatbond/features/profile/presentation/providers/profile_provider.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
@@ -50,29 +48,53 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final signupState = ref.watch(signupProvider);
-    final uploadProfileState = ref.watch(uploadProfilePictureProvider);
-    final createUserProfileState = ref.watch(createUserProfileProvider);
 
     ref.listen(signupProvider, (previous, state) {
-      state.whenData((authUser) {
-        if (authUser != null && selectedImage != null) {
-          _uploadProfileAndCreateUser(authUser.uid);
-        }
-      });
+      state.when(
+          data: (authUser) {
+            if (authUser != null) {
+              _showToast('Account created. Verify your email to continue.',
+                  Icons.check);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                AppConstants.verifyOtpRoute,
+                (route) => false,
+                arguments: {
+                  'purpose': 'SIGNUP',
+                  'email': email,
+                  'pendingImage': selectedImage,
+                  'pendingName': name,
+                },
+              );
+            }
+          },
+          error: (error, _) {
+            _showToast(error.toString(), Icons.error);
+          },
+          loading: () {});
+
+      // state.whenData((authUser) {
+      //   if (authUser != null) {
+      //     _showToast(
+      //         'Account created. Verify your email to continue.', Icons.check);
+      //     Navigator.of(context).pushReplacementNamed(
+      //       AppConstants.verifyOtpRoute,
+      //       arguments: {
+      //         'purpose': 'signup',
+      //         'email': email,
+      //         // no uid exists yet (unverified) — carry these along so the
+      //         // profile can be created once verifyOtp() returns a real uid
+      //         'pendingImage': selectedImage,
+      //         'pendingName': name,
+      //       },
+      //     );
+      //   }
+      // });
+      // state.whenError((error, _) {
+      //   _showToast(error.toString(), Icons.error);
+      // });
     });
 
-    ref.listen(createUserProfileProvider, (previous, state) {
-      state.whenData((_) {
-        ref.invalidate(authRemoteDataSourceProvider);
-        ref.invalidate(chatRemoteDataSourceProvider);
-        _showToast('User registered successfully!', Icons.check);
-        Navigator.of(context).pushReplacementNamed(AppConstants.homeRoute);
-      });
-    });
-
-    bool isProcessing = uploadProfileState.isLoading ||
-        createUserProfileState.isLoading ||
-        signupState.isLoading;
+    bool isProcessing = signupState.isLoading;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -204,28 +226,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _uploadProfileAndCreateUser(String uid) async {
-    if (selectedImage == null) return;
-
-    await ref
-        .read(uploadProfilePictureProvider.notifier)
-        .uploadProfilePicture(selectedImage!, uid);
-
-    final uploadState = ref.read(uploadProfilePictureProvider);
-    uploadState.whenData((url) {
-      if (url != null) {
-        final userProfile = UserProfileEntity(
-          uid: uid,
-          name: name!,
-          pfpURL: url,
-        );
-        ref.read(createUserProfileProvider.notifier).createProfile(userProfile);
-      } else {
-        _showToast('Failed to upload profile picture', Icons.error);
-      }
-    });
   }
 
   Widget _loginAccountLink(BuildContext context) {
